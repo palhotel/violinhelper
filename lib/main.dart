@@ -15,7 +15,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final wordPair = new WordPair.random();
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Violin Pitch Helper',
       theme: ThemeData(
         primarySwatch: Colors.green,
         visualDensity: VisualDensity.adaptivePlatformDensity,
