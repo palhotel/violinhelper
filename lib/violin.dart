@@ -17,6 +17,11 @@ class _Violin extends State<Violin> with SingleTickerProviderStateMixin {
   final astring = 69;
   final estring = 76;
 
+  bool gplay = false;
+  bool dplay = false;
+  bool aplay = false;
+  bool eplay = false;
+
   @override
   void initState() {
     controller = new AnimationController(
@@ -43,7 +48,7 @@ class _Violin extends State<Violin> with SingleTickerProviderStateMixin {
     });
   }
 
-  void gotoAbout(){
+  void gotoAbout() {
     debugPrint("go to about");
   }
 
@@ -52,39 +57,95 @@ class _Violin extends State<Violin> with SingleTickerProviderStateMixin {
     return new Scaffold(
       body: Center(
           child: new GestureDetector(
-            onTap: () {
-              controller.reset();
-              controller.forward();
-              playAndStop(astring, 2);
-            },
-            child: Container(
-              child: Row(
-                children: [
-                  new LeftArea(animation: animation),
-                  new AnimatedViolin(animation: animation),
-                ],
-              ),
-              decoration: new BoxDecoration(
-                color: Color.fromRGBO(196, 96, 64, 1)
-              ),
-            )
-          )
-      ),
+              onTap: () {},
+              onTapDown: (TapDownDetails details) {
+                var x = details.localPosition.dx;
+                controller.reset();
+                controller.forward();
+                if (x >= 250 && x <= 270) {
+                  playAndStop(gstring, 1);
+                  setState(() {
+                    gplay = true;
+                    dplay = false;
+                    aplay = false;
+                    eplay = false;
+                  });
+                  new Future.delayed(new Duration(seconds: 1), () {
+                    setState(() {
+                      gplay = false;
+                    });
+                  });
+                } else if (x >= 295 && x <= 315) {
+                  playAndStop(dstring, 1);
+                  setState(() {
+                    gplay = false;
+                    dplay = true;
+                    aplay = false;
+                    eplay = false;
+                  });
+                  new Future.delayed(new Duration(seconds: 1), () {
+                    setState(() {
+                      dplay = false;
+                    });
+                  });
+                } else if (x >= 335 && x <= 355) {
+                  playAndStop(astring, 1);
+                  setState(() {
+                    gplay = false;
+                    dplay = false;
+                    aplay = true;
+                    eplay = false;
+                  });
+                  new Future.delayed(new Duration(seconds: 1), () {
+                    setState(() {
+                      aplay = false;
+                    });
+                  });
+                } else if (x >= 380 && x <= 400) {
+                  playAndStop(estring, 1);
+                  setState(() {
+                    gplay = false;
+                    dplay = false;
+                    aplay = false;
+                    eplay = true;
+                  });
+                  new Future.delayed(new Duration(seconds: 1), () {
+                    setState(() {
+                      eplay = false;
+                    });
+                  });
+                }
+              },
+              child: Container(
+                child: Row(
+                  children: [
+                    new LeftArea(animation: animation),
+                    new AnimatedViolin(
+                        animation: animation,
+                        gplay: this.gplay,
+                        dplay: this.dplay,
+                        aplay: this.aplay,
+                        eplay: this.eplay),
+                  ],
+                ),
+                decoration:
+                    new BoxDecoration(color: Color.fromRGBO(196, 96, 64, 1)),
+              ))),
       persistentFooterButtons: <Widget>[
-        Text('Violin Pitch Helper', style: new TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-        new IconButton(tooltip: 'Check New Version', icon: new Icon(Icons.update), onPressed: gotoAbout,)
+        Text('Violin Pitch Helper',
+            style: new TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+        new IconButton(
+          tooltip: 'Check New Version',
+          icon: new Icon(Icons.update),
+          onPressed: gotoAbout,
+        )
       ],
     );
   }
 }
 
 //The accuracy of the pitch
-enum Accuracy {
-  NONE,
-  GOOD,
-  LOW,
-  HIGH
-}
+enum Accuracy { NONE, GOOD, LOW, HIGH }
 
 class MusicNote {
   int midi;
@@ -93,7 +154,7 @@ class MusicNote {
   double y;
   String text;
 
-  MusicNote(double x, double y, int midi, String text){
+  MusicNote(double x, double y, int midi, String text) {
     this.x = x;
     this.y = y;
     this.midi = midi;
@@ -102,16 +163,25 @@ class MusicNote {
 }
 
 class FingerBoard extends CustomPainter {
-  FingerBoard(){
+  FingerBoard() {
     initPaints();
   }
-  FingerBoard.withSize(double w, double h, double l, double t){
+  FingerBoard.withSize(double w, double h, double l, double t, bool gplay,
+      bool dplay, bool aplay, bool eplay) {
     this.clientLeft = l;
     this.clientTop = t;
     this.clientWidth = w;
     this.clientHeight = h;
+    this.gplay = gplay;
+    this.dplay = dplay;
+    this.aplay = aplay;
+    this.eplay = eplay;
     initPaints();
   }
+  bool gplay;
+  bool dplay;
+  bool aplay;
+  bool eplay;
   Paint _boardPaint;
   Paint _stringsPaint;
   Paint _carvePaint;
@@ -128,7 +198,7 @@ class FingerBoard extends CustomPainter {
   static const toLeft = 16;
   static const span = 32;
 
-  void genrateMusicNotes(){
+  void genrateMusicNotes() {
     musicNotes = List<MusicNote>();
     double xStart = clientLeft + toLeft;
     double yStart = clientTop + 14;
@@ -141,9 +211,8 @@ class FingerBoard extends CustomPainter {
     musicNotes.addAll([g, d, a, e]);
   }
 
-  void initPaints(){
-    _boardPaint = Paint()
-      ..color = Color.fromARGB(255, 64, 64, 64);
+  void initPaints() {
+    _boardPaint = Paint()..color = Color.fromARGB(255, 64, 64, 64);
     _stringsPaint = Paint()
       ..color = Color.fromARGB(255, 220, 220, 220)
       ..strokeWidth = 4;
@@ -161,8 +230,23 @@ class FingerBoard extends CustomPainter {
     _bridgePaint = Paint()
       ..color = Color.fromARGB(255, 240, 192, 128)
       ..strokeWidth = 4;
-    textPainter = TextPainter(textAlign: TextAlign.center, textDirection: TextDirection.rtl);
+    textPainter = TextPainter(
+        textAlign: TextAlign.center, textDirection: TextDirection.rtl);
     genrateMusicNotes();
+  }
+
+  void drawString(
+      Canvas canvas, Offset start, Offset end, Paint painter, bool shake) {
+    if (shake) {
+      //find middle and add offset
+      var offset = 6;
+      Offset middle =
+          Offset((start.dx + end.dx) / 2 + offset, (start.dy + end.dy) / 2);
+      canvas.drawLine(start, middle, painter);
+      canvas.drawLine(middle, end, painter);
+    } else {
+      canvas.drawLine(start, end, painter);
+    }
   }
 
   @override
@@ -170,35 +254,78 @@ class FingerBoard extends CustomPainter {
     var boardHeight = clientHeight * 0.8;
     var bridgeTop = clientHeight - 32;
 
-    canvas.drawRect(Rect.fromLTWH(clientLeft, clientTop, clientWidth, boardHeight), _boardPaint);
+    canvas.drawRect(
+        Rect.fromLTWH(clientLeft, clientTop, clientWidth, boardHeight),
+        _boardPaint);
     double xStart = clientLeft + toLeft;
     double yStart = clientTop + 32;
     double delta = (clientWidth - toLeft * 2) / 3;
     double stringsLen = clientHeight;
     //Draw pillow
-    canvas.drawLine(Offset(clientLeft, clientTop + 32), Offset(clientWidth, clientTop + 32), _carvePaint);
-    canvas.drawLine(Offset(xStart, clientTop), Offset(xStart, yStart), _stringsPaint..strokeWidth = 4..color=Color.fromARGB(128, 220, 220, 220));
-    canvas.drawLine(Offset((xStart + delta), clientTop), Offset(xStart + delta, yStart), _stringsPaint..strokeWidth = 3..color=Color.fromARGB(128, 220, 220, 220));
-    canvas.drawLine(Offset((xStart + delta * 2), clientTop), Offset((xStart + delta * 2), yStart), _stringsPaint..strokeWidth=2..color=Color.fromARGB(128, 220, 220, 220));
-    canvas.drawLine(Offset((xStart + delta * 3), clientTop), Offset((xStart + delta * 3), yStart), _stringsPaint..strokeWidth=1..color=Color.fromARGB(128, 220, 220, 220));
+    canvas.drawLine(Offset(clientLeft, clientTop + 32),
+        Offset(clientWidth, clientTop + 32), _carvePaint);
+    canvas.drawLine(
+        Offset(xStart, clientTop),
+        Offset(xStart, yStart),
+        _stringsPaint
+          ..strokeWidth = 4
+          ..color = Color.fromARGB(128, 220, 220, 220));
+    canvas.drawLine(
+        Offset((xStart + delta), clientTop),
+        Offset(xStart + delta, yStart),
+        _stringsPaint
+          ..strokeWidth = 3
+          ..color = Color.fromARGB(128, 220, 220, 220));
+    canvas.drawLine(
+        Offset((xStart + delta * 2), clientTop),
+        Offset((xStart + delta * 2), yStart),
+        _stringsPaint
+          ..strokeWidth = 2
+          ..color = Color.fromARGB(128, 220, 220, 220));
+    canvas.drawLine(
+        Offset((xStart + delta * 3), clientTop),
+        Offset((xStart + delta * 3), yStart),
+        _stringsPaint
+          ..strokeWidth = 1
+          ..color = Color.fromARGB(128, 220, 220, 220));
+
+    //Draw Bridge
+    canvas.drawLine(Offset(clientLeft, bridgeTop),
+        Offset(clientWidth, bridgeTop), _bridgePaint);
 
     _stringsPaint..color = Color.fromARGB(255, 220, 220, 220);
     //Draw G
-    canvas.drawLine(Offset(xStart, yStart), Offset(xStart, stringsLen), _stringsPaint..strokeWidth = 4);
+    drawString(canvas, Offset(xStart, yStart), Offset(xStart, stringsLen),
+        _stringsPaint..strokeWidth = 4, gplay);
     //Draw D
-    canvas.drawLine(Offset((xStart + delta), yStart), Offset(xStart + delta, stringsLen), _stringsPaint..strokeWidth = 3);
+    drawString(
+        canvas,
+        Offset((xStart + delta), yStart),
+        Offset(xStart + delta, stringsLen),
+        _stringsPaint..strokeWidth = 3,
+        dplay);
     //Draw A
-    canvas.drawLine(Offset((xStart + delta * 2), yStart), Offset((xStart + delta * 2), stringsLen), _stringsPaint..strokeWidth = 2);
+    drawString(
+        canvas,
+        Offset((xStart + delta * 2), yStart),
+        Offset((xStart + delta * 2), stringsLen),
+        _stringsPaint..strokeWidth = 2,
+        aplay);
     //Draw E
-    canvas.drawLine(Offset((xStart + delta * 3), yStart), Offset((xStart + delta * 3), stringsLen), _stringsPaint..strokeWidth = 1..color=Colors.white);
-
-    //Draw Bridge
-    canvas.drawLine(Offset(clientLeft, bridgeTop), Offset(clientWidth, bridgeTop), _bridgePaint);
+    drawString(
+        canvas,
+        Offset((xStart + delta * 3), yStart),
+        Offset((xStart + delta * 3), stringsLen),
+        _stringsPaint
+          ..strokeWidth = 1
+          ..color = Colors.white,
+        eplay);
 
     //Draw Music Notes
     this.musicNotes.forEach((note) {
-      if(note.accuracy == Accuracy.GOOD){
-        canvas.drawCircle(Offset(note.x, note.y), delta / 10, _activeNotePaint..style);
+      if (note.accuracy == Accuracy.GOOD) {
+        canvas.drawCircle(
+            Offset(note.x, note.y), delta / 10, _activeNotePaint..style);
         canvas.save();
         textPainter.text = new TextSpan(
           text: note.text,
@@ -226,18 +353,17 @@ class FingerBoard extends CustomPainter {
   }
 }
 
-class FHole extends CustomPainter{
-
+class FHole extends CustomPainter {
   double clientWidth = 300;
   double clientHeight = 400;
   double clientLeft = 0;
   double clientTop = 0;
   TextPainter _fHolePaint;
 
-  FHole(){
+  FHole() {
     initPaints();
   }
-  FHole.withSize(double w, double h, double l, double t){
+  FHole.withSize(double w, double h, double l, double t) {
     this.clientLeft = l;
     this.clientTop = t;
     this.clientWidth = w;
@@ -245,23 +371,23 @@ class FHole extends CustomPainter{
     initPaints();
   }
 
-  void initPaints(){
-    _fHolePaint = TextPainter(textAlign: TextAlign.center, textDirection: TextDirection.rtl);
+  void initPaints() {
+    _fHolePaint = TextPainter(
+        textAlign: TextAlign.center, textDirection: TextDirection.rtl);
   }
 
   //child: Text('f', style: new TextStyle(fontFamily: 'Georgia', fontSize: 64, fontStyle: FontStyle.italic)),
   @override
   void paint(Canvas canvas, Size size) {
     _fHolePaint.text = new TextSpan(
-      text: 'f',
-      style: TextStyle(
-        color: Colors.black,
-        fontFamily: 'Georgia',
-        fontStyle: FontStyle.italic,
-        fontWeight: FontWeight.bold,
-        fontSize: 128,
-      )
-    );
+        text: 'f',
+        style: TextStyle(
+          color: Colors.black,
+          fontFamily: 'Georgia',
+          fontStyle: FontStyle.italic,
+          fontWeight: FontWeight.bold,
+          fontSize: 128,
+        ));
     _fHolePaint.layout();
     _fHolePaint.paint(canvas, new Offset(clientWidth - 128, clientHeight - 80));
   }
@@ -286,17 +412,24 @@ class LeftArea extends AnimatedWidget {
             height: containerHeight,
             child: ClipRect(
               child: CustomPaint(
-                  painter:FHole.withSize(realWidth, containerHeight, 0, 18)
-              ),
-            )
-        )
-    );
+                  painter: FHole.withSize(realWidth, containerHeight, 0, 18)),
+            )));
   }
 }
 
 class AnimatedViolin extends AnimatedWidget {
-  AnimatedViolin({Key key, Animation<double> animation})
+  AnimatedViolin(
+      {Key key,
+      Animation<double> animation,
+      this.gplay,
+      this.dplay,
+      this.aplay,
+      this.eplay})
       : super(key: key, listenable: animation);
+  bool gplay;
+  bool dplay;
+  bool aplay;
+  bool eplay;
 
   Widget build(BuildContext context) {
     final Animation<double> animation = listenable;
@@ -304,17 +437,15 @@ class AnimatedViolin extends AnimatedWidget {
     var realLeft = size.width * 0.6;
     var realWidth = size.width - realLeft - 8;
     var containerHeight = size.height - 84;
-
     return new Center(
       child: new Container(
-        width: realWidth,
-        height: containerHeight,
-        child: ClipRect(
-          child: CustomPaint(
-            painter: FingerBoard.withSize(realWidth, containerHeight, 0, 18)
-          ),
-        )
-      ),
+          width: realWidth,
+          height: containerHeight,
+          child: ClipRect(
+            child: CustomPaint(
+                painter: FingerBoard.withSize(realWidth, containerHeight, 0, 18,
+                    gplay, dplay, aplay, eplay)),
+          )),
     );
   }
 }
