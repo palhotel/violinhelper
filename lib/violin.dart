@@ -25,9 +25,18 @@ class _Violin extends State<Violin> with SingleTickerProviderStateMixin {
   @override
   void initState() {
     controller = new AnimationController(
-        duration: const Duration(milliseconds: 2000), vsync: this);
-    animation = new Tween(begin: 10.0, end: 400.0).animate(controller);
-    controller.forward();
+        duration: const Duration(milliseconds: 1000), vsync: this);
+    final CurvedAnimation curve = CurvedAnimation(parent: controller, curve: Curves.easeInOutSine);
+    var tween1 = new Tween(begin: -2.0, end: 2.0);
+    var tween2 = new Tween(begin: 2.0, end: -2.0);
+    var tweenItem1 = new TweenSequenceItem(tween: tween1, weight: 1);
+    var tweenItem2 = new TweenSequenceItem(tween: tween2, weight: 1);
+    var sequence = new TweenSequence([
+      tweenItem1,tweenItem2,tweenItem1,tweenItem2,tweenItem1,tweenItem2,tweenItem1,tweenItem2,
+      tweenItem1,tweenItem2,tweenItem1,tweenItem2,tweenItem1,tweenItem2,tweenItem1,tweenItem2,
+      tweenItem1,tweenItem2,tweenItem1,tweenItem2,tweenItem1,tweenItem2,tweenItem1,tweenItem2
+    ]);
+    animation = sequence.animate(curve);
 
     FlutterMidi.unmute();
     rootBundle.load("resource/violin.sf2").then((sf2) {
@@ -43,6 +52,8 @@ class _Violin extends State<Violin> with SingleTickerProviderStateMixin {
 
   void playAndStop(int midi, int seconds) {
     FlutterMidi.playMidiNote(midi: midi);
+    controller.reset();
+    controller.forward();
     new Future.delayed(new Duration(seconds: seconds), () {
       FlutterMidi.stopMidiNote(midi: midi);
     });
@@ -60,9 +71,8 @@ class _Violin extends State<Violin> with SingleTickerProviderStateMixin {
               onTap: () {},
               onTapDown: (TapDownDetails details) {
                 var x = details.localPosition.dx;
-                controller.reset();
-                controller.forward();
-                if (x >= 250 && x <= 270) {
+
+                if (x >= 245 && x <= 275) {
                   playAndStop(gstring, 1);
                   setState(() {
                     gplay = true;
@@ -75,7 +85,7 @@ class _Violin extends State<Violin> with SingleTickerProviderStateMixin {
                       gplay = false;
                     });
                   });
-                } else if (x >= 295 && x <= 315) {
+                } else if (x >= 290 && x <= 320) {
                   playAndStop(dstring, 1);
                   setState(() {
                     gplay = false;
@@ -88,7 +98,7 @@ class _Violin extends State<Violin> with SingleTickerProviderStateMixin {
                       dplay = false;
                     });
                   });
-                } else if (x >= 335 && x <= 355) {
+                } else if (x >= 330 && x <= 360) {
                   playAndStop(astring, 1);
                   setState(() {
                     gplay = false;
@@ -101,7 +111,7 @@ class _Violin extends State<Violin> with SingleTickerProviderStateMixin {
                       aplay = false;
                     });
                   });
-                } else if (x >= 380 && x <= 400) {
+                } else if (x >= 375 && x <= 405) {
                   playAndStop(estring, 1);
                   setState(() {
                     gplay = false;
@@ -167,7 +177,7 @@ class FingerBoard extends CustomPainter {
     initPaints();
   }
   FingerBoard.withSize(double w, double h, double l, double t, bool gplay,
-      bool dplay, bool aplay, bool eplay) {
+      bool dplay, bool aplay, bool eplay, Animation<double> animation) {
     this.clientLeft = l;
     this.clientTop = t;
     this.clientWidth = w;
@@ -176,6 +186,7 @@ class FingerBoard extends CustomPainter {
     this.dplay = dplay;
     this.aplay = aplay;
     this.eplay = eplay;
+    this.animation = animation;
     initPaints();
   }
   bool gplay;
@@ -194,6 +205,7 @@ class FingerBoard extends CustomPainter {
   double clientLeft = 0;
   double clientTop = 0;
   List<MusicNote> musicNotes;
+  Animation<double> animation;
 
   static const toLeft = 16;
   static const span = 32;
@@ -239,7 +251,7 @@ class FingerBoard extends CustomPainter {
       Canvas canvas, Offset start, Offset end, Paint painter, bool shake) {
     if (shake) {
       //find middle and add offset
-      var offset = 6;
+      var offset = animation.value;
       Offset middle =
           Offset((start.dx + end.dx) / 2 + offset, (start.dy + end.dy) / 2);
       canvas.drawLine(start, middle, painter);
@@ -444,7 +456,7 @@ class AnimatedViolin extends AnimatedWidget {
           child: ClipRect(
             child: CustomPaint(
                 painter: FingerBoard.withSize(realWidth, containerHeight, 0, 18,
-                    gplay, dplay, aplay, eplay)),
+                    gplay, dplay, aplay, eplay, animation)),
           )),
     );
   }
