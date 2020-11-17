@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_midi/flutter_midi.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/animation.dart';
+import 'package:pitchdetector/pitchdetector.dart';
 
 class Violin extends StatefulWidget {
   @override
@@ -11,6 +12,10 @@ class Violin extends StatefulWidget {
 class _Violin extends State<Violin> with SingleTickerProviderStateMixin {
   Animation<double> animation;
   AnimationController controller;
+  Pitchdetector detector;
+  bool isRecording = false;
+  double pitch;
+  String pitchstr = 'Start Recording';
 
   final gstring = 55;
   final dstring = 62;
@@ -42,6 +47,15 @@ class _Violin extends State<Violin> with SingleTickerProviderStateMixin {
     rootBundle.load("resource/violin.sf2").then((sf2) {
       FlutterMidi.prepare(sf2: sf2, name: "violin.sf2");
     });
+
+    detector = new Pitchdetector(sampleRate: 44100, sampleSize: 4096);
+    detector.onRecorderStateChanged.listen((event) {
+      print("event " + event.toString());
+      setState(() {
+        pitch = event["pitch"];
+        pitchstr = pitch.toString();
+      });
+    });
     super.initState();
   }
 
@@ -61,6 +75,7 @@ class _Violin extends State<Violin> with SingleTickerProviderStateMixin {
 
   void gotoAbout() {
     debugPrint("go to about");
+    detector.startRecording();
   }
 
   @override
@@ -145,7 +160,7 @@ class _Violin extends State<Violin> with SingleTickerProviderStateMixin {
         Text('Violin Pitch Helper',
             style: new TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
         new IconButton(
-          tooltip: 'Check New Version',
+          tooltip: pitchstr,
           icon: new Icon(Icons.update),
           onPressed: gotoAbout,
         )
