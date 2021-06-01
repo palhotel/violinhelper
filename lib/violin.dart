@@ -3,6 +3,94 @@ import 'package:flutter_midi/flutter_midi.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/animation.dart';
 import 'package:pitchdetector/pitchdetector.dart';
+import 'package:violin_helper/musicnote.dart';
+
+import 'fingerboard.dart';
+import 'leftarea.dart';
+const map = {"C0":16.35,
+  "C#0/Db0":17.32,
+  "D0":18.35,
+  "D#0/Eb0":19.45,
+  "E0":20.60,
+  "F0":21.83,
+  "F#0/Gb0":23.12,
+  "G0":24.50,
+  "G#0/Ab0":25.96,
+  "A0":27.50,
+  "A#0/Bb0":29.14,
+  "B0":30.87,
+  "C1":32.70,
+  "C#1/Db1":34.65,
+  "D1":36.71,
+  "D#1/Eb1":38.89,
+  "E1":41.20,
+  "F1":43.65,
+  "F#1/Gb1":46.25,
+  "G1":49.00,
+  "G#1/Ab1":51.91,
+  "A1":55.00,
+  "A#1/Bb1":58.27,
+  "B1":61.74,
+  "C2":65.41,
+  "C#2/Db2":69.30,
+  "D2":73.42,
+  "D#2/Eb2":77.78,
+  "E2":82.41,
+  "F2":87.31,
+  "F#2/Gb2":92.50,
+  "G2":98.00,
+  "G#2/Ab2":103.83,
+  "A2":110.00,
+  "A#2/Bb2":116.54,
+  "B2":123.47,
+  "C3":130.81,
+  "C#3/Db3":138.59,
+  "D3":146.83,
+  "D#3/Eb3":155.56,
+  "E3":164.81,
+  "F3":174.61,
+  "F#3/Gb3":185.00,
+  "G3":196.00,
+  "G#3/Ab3":207.65,
+  "A3":220.00,
+  "A#3/Bb3":233.08,
+  "B3":246.94,
+  "C4":261.63,
+  "C#4/Db4":277.18,
+  "D4":293.66,
+  "D#4/Eb4":311.13,
+  "E4":329.63,
+  "F4":349.23,
+  "F#4/Gb4":369.99,
+  "G4":392.00,
+  "G#4/Ab4":415.30,
+  "A4":440.00,
+  "A#4/Bb4":466.16,
+  "B4":493.88,
+  "C5":523.25,
+  "C#5/Db5":554.37,
+  "D5":587.33,
+  "D#5/Eb5":622.25,
+  "E5":659.25,
+  "F5":698.46,
+  "F#5/Gb5":739.99,
+  "G5":783.99,
+  "G#5/Ab5":830.61,
+  "A5":880.00,
+  "A#5/Bb5":932.33,
+  "B5":987.77,
+  "C6":1046.50,
+  "C#6/Db6":1108.73,
+  "D6":1174.66,
+  "D#6/Eb6":1244.51,
+  "E6":1318.51,
+  "F6":1396.91,
+  "F#6/Gb6":1479.98,
+  "G6":1567.98,
+  "G#6/Ab6":1661.22,
+  "A6":1760.00,
+  "A#6/Bb6":1864.66,
+  "B6":1975.53};
 
 class Violin extends StatefulWidget {
   @override
@@ -14,8 +102,9 @@ class _Violin extends State<Violin> with SingleTickerProviderStateMixin {
   AnimationController controller;
   Pitchdetector detector;
   bool isRecording = false;
-  double pitch;
-  String pitchstr = 'Start Recording';
+  double pitch = 440.0;
+  String pitchstr = 'A';
+  Map reverseMap = new Map();
 
   final gstring = 55;
   final dstring = 62;
@@ -47,21 +136,38 @@ class _Violin extends State<Violin> with SingleTickerProviderStateMixin {
     rootBundle.load("resource/violin.sf2").then((sf2) {
       FlutterMidi.prepare(sf2: sf2, name: "violin.sf2");
     });
-
+    map.forEach((key, value) {
+      reverseMap[value] = key;
+    });
     detector = new Pitchdetector(sampleRate: 44100, sampleSize: 4096);
     detector.onRecorderStateChanged.listen((event) {
       print("event " + event.toString());
       setState(() {
         pitch = event["pitch"];
-        pitchstr = pitch.toString();
+        getMusicNote();
       });
     });
+    detector.startRecording();
     super.initState();
   }
 
   dispose() {
     controller?.dispose();
     super.dispose();
+  }
+
+  getMusicNote() {
+    var list = reverseMap.keys;
+    var min = 99999.0;
+    var idx = 0;
+    for(var i = 0; i < list.length; i++){
+      var absValue = (list.elementAt(i) - this.pitch).abs();
+      if(absValue < min){
+        min = absValue;
+        idx = i;
+      }
+    }
+    this.pitchstr = reverseMap[list.elementAt(idx)];
   }
 
   void playAndStop(int midi, int seconds) {
@@ -75,7 +181,6 @@ class _Violin extends State<Violin> with SingleTickerProviderStateMixin {
 
   void gotoAbout() {
     debugPrint("go to about");
-    detector.startRecording();
   }
 
   @override
@@ -94,6 +199,8 @@ class _Violin extends State<Violin> with SingleTickerProviderStateMixin {
                     dplay = false;
                     aplay = false;
                     eplay = false;
+                    pitch = 196.0;
+                    getMusicNote();
                   });
                   new Future.delayed(new Duration(seconds: 1), () {
                     setState(() {
@@ -107,6 +214,8 @@ class _Violin extends State<Violin> with SingleTickerProviderStateMixin {
                     dplay = true;
                     aplay = false;
                     eplay = false;
+                    pitch = 293.66;
+                    getMusicNote();
                   });
                   new Future.delayed(new Duration(seconds: 1), () {
                     setState(() {
@@ -120,6 +229,8 @@ class _Violin extends State<Violin> with SingleTickerProviderStateMixin {
                     dplay = false;
                     aplay = true;
                     eplay = false;
+                    pitch = 440.0;
+                    getMusicNote();
                   });
                   new Future.delayed(new Duration(seconds: 1), () {
                     setState(() {
@@ -133,6 +244,8 @@ class _Violin extends State<Violin> with SingleTickerProviderStateMixin {
                     dplay = false;
                     aplay = false;
                     eplay = true;
+                    pitch = 659.25;
+                    getMusicNote();
                   });
                   new Future.delayed(new Duration(seconds: 1), () {
                     setState(() {
@@ -144,7 +257,7 @@ class _Violin extends State<Violin> with SingleTickerProviderStateMixin {
               child: Container(
                 child: Row(
                   children: [
-                    new LeftArea(animation: animation),
+                    new LeftArea(animation: animation, pitchstr: pitchstr),
                     new AnimatedViolin(
                         animation: animation,
                         gplay: this.gplay,
@@ -158,289 +271,9 @@ class _Violin extends State<Violin> with SingleTickerProviderStateMixin {
               ))),
       persistentFooterButtons: <Widget>[
         Text('Violin Pitch Helper',
-            style: new TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-        new IconButton(
-          tooltip: pitchstr,
-          icon: new Icon(Icons.update),
-          onPressed: gotoAbout,
-        )
+            style: new TextStyle(fontWeight: FontWeight.bold, fontSize: 18))
       ],
     );
-  }
-}
-
-//The accuracy of the pitch
-enum Accuracy { NONE, GOOD, LOW, HIGH }
-
-class MusicNote {
-  int midi;
-  Accuracy accuracy = Accuracy.NONE;
-  double x;
-  double y;
-  String text;
-
-  MusicNote(double x, double y, int midi, String text) {
-    this.x = x;
-    this.y = y;
-    this.midi = midi;
-    this.text = text;
-  }
-}
-
-class FingerBoard extends CustomPainter {
-  FingerBoard() {
-    initPaints();
-  }
-  FingerBoard.withSize(double w, double h, double l, double t, bool gplay,
-      bool dplay, bool aplay, bool eplay, Animation<double> animation) {
-    this.clientLeft = l;
-    this.clientTop = t;
-    this.clientWidth = w;
-    this.clientHeight = h;
-    this.gplay = gplay;
-    this.dplay = dplay;
-    this.aplay = aplay;
-    this.eplay = eplay;
-    this.animation = animation;
-    initPaints();
-  }
-  bool gplay;
-  bool dplay;
-  bool aplay;
-  bool eplay;
-  Paint _boardPaint;
-  Paint _stringsPaint;
-  Paint _carvePaint;
-  Paint _notePaint;
-  Paint _activeNotePaint;
-  Paint _bridgePaint;
-  TextPainter textPainter;
-  double clientWidth = 300;
-  double clientHeight = 400;
-  double clientLeft = 0;
-  double clientTop = 0;
-  List<MusicNote> musicNotes;
-  Animation<double> animation;
-
-  static const toLeft = 16;
-  static const span = 32;
-
-  void genrateMusicNotes() {
-    musicNotes = List<MusicNote>();
-    double xStart = clientLeft + toLeft;
-    double yStart = clientTop + 14;
-    double delta = (clientWidth - toLeft * 2) / 3;
-    MusicNote g = MusicNote(xStart, yStart, 55, 'G');
-    MusicNote d = MusicNote(xStart + delta, yStart, 62, 'D');
-    MusicNote a = MusicNote(xStart + delta * 2, yStart, 69, 'A');
-    MusicNote e = MusicNote(xStart + delta * 3, yStart, 76, 'E');
-    g.accuracy = Accuracy.GOOD;
-    musicNotes.addAll([g, d, a, e]);
-  }
-
-  void initPaints() {
-    _boardPaint = Paint()..color = Color.fromARGB(255, 64, 64, 64);
-    _stringsPaint = Paint()
-      ..color = Color.fromARGB(255, 220, 220, 220)
-      ..strokeWidth = 4;
-    _carvePaint = Paint()
-      ..color = Color.fromARGB(200, 192, 162, 128)
-      ..strokeWidth = 2;
-    _notePaint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2
-      ..color = Colors.white;
-    _activeNotePaint = Paint()
-      ..style = PaintingStyle.fill
-      ..strokeWidth = 2
-      ..color = Color.fromARGB(128, 64, 240, 64);
-    _bridgePaint = Paint()
-      ..color = Color.fromARGB(255, 240, 192, 128)
-      ..strokeWidth = 4;
-    textPainter = TextPainter(
-        textAlign: TextAlign.center, textDirection: TextDirection.rtl);
-    genrateMusicNotes();
-  }
-
-  void drawString(
-      Canvas canvas, Offset start, Offset end, Paint painter, bool shake) {
-    if (shake) {
-      //find middle and add offset
-      var offset = animation.value;
-      Offset middle =
-          Offset((start.dx + end.dx) / 2 + offset, (start.dy + end.dy) / 2);
-      canvas.drawLine(start, middle, painter);
-      canvas.drawLine(middle, end, painter);
-    } else {
-      canvas.drawLine(start, end, painter);
-    }
-  }
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    var boardHeight = clientHeight * 0.8;
-    var bridgeTop = clientHeight - 32;
-
-    canvas.drawRect(
-        Rect.fromLTWH(clientLeft, clientTop, clientWidth, boardHeight),
-        _boardPaint);
-    double xStart = clientLeft + toLeft;
-    double yStart = clientTop + 32;
-    double delta = (clientWidth - toLeft * 2) / 3;
-    double stringsLen = clientHeight;
-    //Draw pillow
-    canvas.drawLine(Offset(clientLeft, clientTop + 32),
-        Offset(clientWidth, clientTop + 32), _carvePaint);
-    canvas.drawLine(
-        Offset(xStart, clientTop),
-        Offset(xStart, yStart),
-        _stringsPaint
-          ..strokeWidth = 4
-          ..color = Color.fromARGB(128, 220, 220, 220));
-    canvas.drawLine(
-        Offset((xStart + delta), clientTop),
-        Offset(xStart + delta, yStart),
-        _stringsPaint
-          ..strokeWidth = 3
-          ..color = Color.fromARGB(128, 220, 220, 220));
-    canvas.drawLine(
-        Offset((xStart + delta * 2), clientTop),
-        Offset((xStart + delta * 2), yStart),
-        _stringsPaint
-          ..strokeWidth = 2
-          ..color = Color.fromARGB(128, 220, 220, 220));
-    canvas.drawLine(
-        Offset((xStart + delta * 3), clientTop),
-        Offset((xStart + delta * 3), yStart),
-        _stringsPaint
-          ..strokeWidth = 1
-          ..color = Color.fromARGB(128, 220, 220, 220));
-
-    //Draw Bridge
-    canvas.drawLine(Offset(clientLeft, bridgeTop),
-        Offset(clientWidth, bridgeTop), _bridgePaint);
-
-    _stringsPaint..color = Color.fromARGB(255, 220, 220, 220);
-    //Draw G
-    drawString(canvas, Offset(xStart, yStart), Offset(xStart, stringsLen),
-        _stringsPaint..strokeWidth = 4, gplay);
-    //Draw D
-    drawString(
-        canvas,
-        Offset((xStart + delta), yStart),
-        Offset(xStart + delta, stringsLen),
-        _stringsPaint..strokeWidth = 3,
-        dplay);
-    //Draw A
-    drawString(
-        canvas,
-        Offset((xStart + delta * 2), yStart),
-        Offset((xStart + delta * 2), stringsLen),
-        _stringsPaint..strokeWidth = 2,
-        aplay);
-    //Draw E
-    drawString(
-        canvas,
-        Offset((xStart + delta * 3), yStart),
-        Offset((xStart + delta * 3), stringsLen),
-        _stringsPaint
-          ..strokeWidth = 1
-          ..color = Colors.white,
-        eplay);
-
-    //Draw Music Notes
-    this.musicNotes.forEach((note) {
-      if (note.accuracy == Accuracy.GOOD) {
-        canvas.drawCircle(
-            Offset(note.x, note.y), delta / 10, _activeNotePaint..style);
-        canvas.save();
-        textPainter.text = new TextSpan(
-          text: note.text,
-          style: TextStyle(
-            color: Colors.white,
-            decorationColor: Colors.amberAccent,
-            decorationStyle: TextDecorationStyle.solid,
-            fontFamily: 'Times New Roman',
-            fontWeight: FontWeight.bold,
-            fontSize: 12.0,
-          ),
-        );
-        textPainter.layout();
-        textPainter.paint(canvas, new Offset(note.x - 6, note.y - 6));
-        canvas.restore();
-      } else {
-        canvas.drawCircle(Offset(note.x, note.y), delta / 10, _notePaint);
-      }
-    });
-  }
-
-  @override
-  bool shouldRepaint(CustomPainter oldDelegate) {
-    return true;
-  }
-}
-
-class FHole extends CustomPainter {
-  double clientWidth = 300;
-  double clientHeight = 400;
-  double clientLeft = 0;
-  double clientTop = 0;
-  TextPainter _fHolePaint;
-
-  FHole() {
-    initPaints();
-  }
-  FHole.withSize(double w, double h, double l, double t) {
-    this.clientLeft = l;
-    this.clientTop = t;
-    this.clientWidth = w;
-    this.clientHeight = h;
-    initPaints();
-  }
-
-  void initPaints() {
-    _fHolePaint = TextPainter(
-        textAlign: TextAlign.center, textDirection: TextDirection.rtl);
-  }
-
-  //child: Text('f', style: new TextStyle(fontFamily: 'Georgia', fontSize: 64, fontStyle: FontStyle.italic)),
-  @override
-  void paint(Canvas canvas, Size size) {
-    _fHolePaint.text = new TextSpan(
-        text: 'f',
-        style: TextStyle(
-          color: Colors.black,
-          fontFamily: 'Georgia',
-          fontStyle: FontStyle.italic,
-          fontWeight: FontWeight.bold,
-          fontSize: 128,
-        ));
-    _fHolePaint.layout();
-    _fHolePaint.paint(canvas, new Offset(clientWidth - 128, clientHeight - 80));
-  }
-
-  @override
-  bool shouldRepaint(CustomPainter oldDelegate) {
-    return true;
-  }
-}
-
-class LeftArea extends AnimatedWidget {
-  LeftArea({Key key, Animation<double> animation})
-      : super(key: key, listenable: animation);
-  @override
-  Widget build(BuildContext context) {
-    var size = MediaQuery.of(context).size;
-    var realWidth = size.width * 0.6;
-    var containerHeight = size.height - 84;
-    return Center(
-        child: Container(
-            width: realWidth,
-            height: containerHeight,
-            child: ClipRect(
-              child: CustomPaint(
-                  painter: FHole.withSize(realWidth, containerHeight, 0, 18)),
-            )));
   }
 }
 
@@ -463,7 +296,7 @@ class AnimatedViolin extends AnimatedWidget {
     var size = MediaQuery.of(context).size;
     var realLeft = size.width * 0.6;
     var realWidth = size.width - realLeft - 8;
-    var containerHeight = size.height - 84;
+    var containerHeight = size.height - 40;
     return new Center(
       child: new Container(
           width: realWidth,
