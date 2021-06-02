@@ -60,7 +60,8 @@ class _Violin extends State<Violin> with SingleTickerProviderStateMixin {
   Pitchdetector detector;
   bool isRecording = false;
   double pitch = 440.0;
-  String pitchstr = 'A';
+  double pitchdelta = 0;
+  String pitchstr = 'A4';
   Map reverseMap = new Map();
 
   final gstring = 55;
@@ -125,6 +126,7 @@ class _Violin extends State<Violin> with SingleTickerProviderStateMixin {
       }
     }
     this.pitchstr = reverseMap[list.elementAt(idx)];
+    this.pitchdelta = list.elementAt(idx) - this.pitch;
   }
 
   void playAndStop(int midi, int seconds) {
@@ -214,7 +216,7 @@ class _Violin extends State<Violin> with SingleTickerProviderStateMixin {
               child: Container(
                 child: Row(
                   children: [
-                    new LeftArea(animation: animation, pitchstr: pitchstr),
+                    new LeftArea(animation: animation, pitchstr: pitchstr, pitchdelta: pitchdelta),
                     new AnimatedViolin(
                         animation: animation,
                         gplay: this.gplay,

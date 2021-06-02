@@ -51,7 +51,7 @@ flutter:
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
   assets:
-    - resource/violin.sf2
+    - resource/
     - images/
 
   # An image asset can refer to one or more resolution-specific "variants", see
