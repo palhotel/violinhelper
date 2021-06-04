@@ -7,7 +7,8 @@ class FingerBoard extends CustomPainter {
     initPaints();
   }
   FingerBoard.withSize(double w, double h, double l, double t, bool gplay,
-      bool dplay, bool aplay, bool eplay, Animation<double> animation) {
+      bool dplay, bool aplay, bool eplay, Animation<double> animation,
+      String pitchstr, double pitchdelta, Map map, Map reverseMap, List<MusicNote> musicNotes) {
     this.clientLeft = l;
     this.clientTop = t;
     this.clientWidth = w;
@@ -17,12 +18,21 @@ class FingerBoard extends CustomPainter {
     this.aplay = aplay;
     this.eplay = eplay;
     this.animation = animation;
+    this.pitchdelta = pitchdelta;
+    this.pitchstr = pitchstr;
+    this.map = map;
+    this.reverseMap = reverseMap;
+    this.musicNotes = musicNotes;
     initPaints();
   }
   bool gplay;
   bool dplay;
   bool aplay;
   bool eplay;
+  String pitchstr;
+  double pitchdelta;
+  Map map;
+  Map reverseMap;
   Paint _boardPaint;
   Paint _stringsPaint;
   Paint _carvePaint;
@@ -41,19 +51,74 @@ class FingerBoard extends CustomPainter {
   static const span = 32;
 
   void genrateMusicNotes() {
-    musicNotes = List<MusicNote>();
+    if(this.musicNotes.length > 0){
+      return;
+    }
     double xStart = clientLeft + toLeft;
     double yStart = clientTop + 14;
     double delta = (clientWidth - toLeft * 2) / 3;
-    MusicNote g = MusicNote(xStart, yStart, 55, 'G');
-    MusicNote d = MusicNote(xStart + delta, yStart, 62, 'D');
-    MusicNote a = MusicNote(xStart + delta * 2, yStart, 69, 'A');
-    MusicNote e = MusicNote(xStart + delta * 3, yStart, 76, 'E');
-    g.accuracy = Accuracy.GOOD;
+    MusicNote g = MusicNote(xStart, yStart, 55, 'G3', 'G');
+    MusicNote d = MusicNote(xStart + delta, yStart, 62, 'D4', 'D');
+    MusicNote a = MusicNote(xStart + delta * 2, yStart, 69, 'A4', 'A');
+    MusicNote e = MusicNote(xStart + delta * 3, yStart, 76, 'E5', 'E');
+
     musicNotes.addAll([g, d, a, e]);
+    var boardHeight = clientHeight * 0.8;
+    var maxHeight = boardHeight * 0.9;
+    var every = maxHeight / 18;
+    var keys = map.keys;
+
+    //compute all music notes in G String
+    var idx = 0;
+    for(var i = 1; i <= 17; i++){
+      idx ++;
+      MusicNote note = MusicNote.fromPitch(keys.elementAt(i), map[keys.elementAt(i)], map, reverseMap);
+      note.accuracy = Accuracy.NONE;
+      note.x = xStart;
+      note.y = yStart + idx * every;
+      note.strings = 'G';
+      musicNotes.add(note);
+    }
+
+    //compute all music notes in D String
+    idx = 0;
+    for(var i = 8; i <= 24; i++){
+      idx ++;
+      MusicNote note = MusicNote.fromPitch(keys.elementAt(i), map[keys.elementAt(i)], map, reverseMap);
+      note.accuracy = Accuracy.NONE;
+      note.x = xStart + delta;
+      note.y = yStart + idx * every;
+      note.strings = 'D';
+      musicNotes.add(note);
+    }
+
+    //compute all music notes in A String
+    idx = 0;
+    for(var i = 15; i <= 31; i++){
+      idx ++;
+      MusicNote note = MusicNote.fromPitch(keys.elementAt(i), map[keys.elementAt(i)], map, reverseMap);
+      note.accuracy = Accuracy.NONE;
+      note.x = xStart + delta * 2;
+      note.y = yStart + idx * every;
+      note.strings = 'A';
+      musicNotes.add(note);
+    }
+
+    //compute all music notes in E String
+    idx = 0;
+    for(var i = 22; i <= 38; i++){
+      idx ++;
+      MusicNote note = MusicNote.fromPitch(keys.elementAt(i), map[keys.elementAt(i)], map, reverseMap);
+      note.accuracy = Accuracy.NONE;
+      note.x = xStart + delta * 3;
+      note.y = yStart + idx * every;
+      note.strings = 'E';
+      musicNotes.add(note);
+    }
   }
 
   void initPaints() {
+    genrateMusicNotes();
     _boardPaint = Paint()..color = Color.fromARGB(255, 64, 64, 64);
     _stringsPaint = Paint()
       ..color = Color.fromARGB(255, 220, 220, 220)
@@ -74,7 +139,6 @@ class FingerBoard extends CustomPainter {
       ..strokeWidth = 4;
     textPainter = TextPainter(
         textAlign: TextAlign.center, textDirection: TextDirection.rtl);
-    genrateMusicNotes();
   }
 
   void drawString(
@@ -169,19 +233,6 @@ class FingerBoard extends CustomPainter {
         canvas.drawCircle(
             Offset(note.x, note.y), delta / 10, _activeNotePaint..style);
         canvas.save();
-        textPainter.text = new TextSpan(
-          text: note.text,
-          style: TextStyle(
-            color: Colors.white,
-            decorationColor: Colors.amberAccent,
-            decorationStyle: TextDecorationStyle.solid,
-            fontFamily: 'Times New Roman',
-            fontWeight: FontWeight.bold,
-            fontSize: 12.0,
-          ),
-        );
-        textPainter.layout();
-        textPainter.paint(canvas, new Offset(note.x - 6, note.y - 6));
         canvas.restore();
       } else {
         canvas.drawCircle(Offset(note.x, note.y), delta / 10, _notePaint);
