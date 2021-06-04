@@ -74,6 +74,8 @@ class _Violin extends State<Violin> with SingleTickerProviderStateMixin {
   bool aplay = false;
   bool eplay = false;
 
+  int counter = 0;
+
   @override
   void initState() {
     controller = new AnimationController(
@@ -126,7 +128,7 @@ class _Violin extends State<Violin> with SingleTickerProviderStateMixin {
       }
     }
     this.pitchstr = reverseMap[list.elementAt(idx)];
-    this.pitchdelta = list.elementAt(idx) - this.pitch;
+    this.pitchdelta = this.pitch - list.elementAt(idx);
   }
 
   void playAndStop(int midi, int seconds) {

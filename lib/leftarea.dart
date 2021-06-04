@@ -9,6 +9,18 @@ class LeftArea extends AnimatedWidget {
 
   String pitchstr;
   double pitchdelta;
+
+  List<Widget> pictures(){
+    if(this.pitchstr.contains("/")){
+      var arr = this.pitchstr.split("/");
+      var str1 = "images/" + arr[0] + ".png";
+      var str2 = "images/" + arr[1] + ".png";
+      return [Image.asset(str1), Image.asset(str2)];
+    } else {
+      return [Image.asset("images/" + this.pitchstr + ".png")];
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
@@ -16,7 +28,6 @@ class LeftArea extends AnimatedWidget {
     var containerHeight = size.height - 40;
     var firstBlockHeight = 200.0;
     var secondBlockHeight = 150.0;
-    var imagePath = "images/" + this.pitchstr + ".png";
     return Center(
         child: Container(
             width: realWidth,
@@ -35,7 +46,10 @@ class LeftArea extends AnimatedWidget {
                 Container(
                   width: realWidth,
                   height: secondBlockHeight,
-                  child: Image.asset(imagePath)
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: pictures(),
+                  )
                 ),
                 Container(
                     width: realWidth,
