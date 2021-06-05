@@ -52,6 +52,7 @@ const map = {
   "G#6":1661.22,
   "A6":1760.00
 };
+bool drawDecorations = true;
 
 class Violin extends StatefulWidget {
   @override
@@ -174,7 +175,8 @@ class _Violin extends State<Violin> with SingleTickerProviderStateMixin {
                 var y = details.localPosition.dy;
                 if (x >= 245 && x <= 275) {
                   //G String
-                  double min = 999;
+                  double min = 36;
+                  debugPrint(min.toString());
                   MusicNote matched = null;
                   for(MusicNote note in this.musicNotes){
                     if(note.strings == 'G' && (note.y - y).abs() < min){
@@ -204,7 +206,7 @@ class _Violin extends State<Violin> with SingleTickerProviderStateMixin {
                   });
                 } else if (x >= 290 && x <= 320) {
                   //D String
-                  double min = 999;
+                  double min = 36;
                   MusicNote matched = null;
                   for(MusicNote note in this.musicNotes){
                     if(note.strings == 'D' && (note.y - y).abs() < min){
@@ -234,7 +236,7 @@ class _Violin extends State<Violin> with SingleTickerProviderStateMixin {
                   });
                 } else if (x >= 330 && x <= 360) {
                   //A String
-                  double min = 999;
+                  double min = 36;
                   MusicNote matched = null;
                   for(MusicNote note in this.musicNotes){
                     if(note.strings == 'A' && (note.y - y).abs() < min){
@@ -264,7 +266,7 @@ class _Violin extends State<Violin> with SingleTickerProviderStateMixin {
                   });
                 } else if (x >= 375 && x <= 405) {
                   //E String
-                  double min = 999;
+                  double min = 36;
                   MusicNote matched = null;
                   for(MusicNote note in this.musicNotes){
                     if(note.strings == 'E' && (note.y - y).abs() < min){
@@ -335,6 +337,14 @@ class _Violin extends State<Violin> with SingleTickerProviderStateMixin {
                             title: Center(child: Text("Violin Pitch Helper (v1.0)"),),
                           ),
                           ListTile(
+                            title: Center(child: Text("Hide / Show all decorations"),),
+                            onTap: (){
+                              setState(() {
+                                drawDecorations = !drawDecorations;
+                              });
+                            },
+                          ),
+                          ListTile(
                             title: Center(child: Text("you@likeada.com"),),
                           ),
                           ListTile(
@@ -391,7 +401,7 @@ class AnimatedViolin extends AnimatedWidget {
           child: ClipRect(
             child: CustomPaint(
                 painter: FingerBoard.withSize(realWidth, containerHeight, 0, 18,
-                    gplay, dplay, aplay, eplay, animation, pitchstr, pitchdelta, map, reverseMap, musicNotes)),
+                    gplay, dplay, aplay, eplay, animation, pitchstr, pitchdelta, map, reverseMap, musicNotes, drawDecorations)),
           )),
     );
   }
