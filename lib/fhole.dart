@@ -34,7 +34,7 @@ class FHole extends CustomPainter {
           fontSize: 128,
         ));
     _fHolePaint.layout();
-    _fHolePaint.paint(canvas, new Offset(clientWidth - 128, clientHeight - 90));
+    _fHolePaint.paint(canvas, new Offset(clientWidth - 128, clientHeight - 120));
   }
 
   @override

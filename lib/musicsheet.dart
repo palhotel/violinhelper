@@ -73,7 +73,7 @@ class MusicSheet extends CustomPainter {
           fontSize: 32,
         ));
     _sheetPainter.layout();
-    _sheetPainter.paint(canvas, new Offset(this.clientWidth /2 - 20, 24));
+    _sheetPainter.paint(canvas, new Offset(this.clientWidth /2 - 16 * note.length / 2, 24));
 
     //drawscales
     symmetricScale(canvas, this.clientWidth / 2 - 1, 64);

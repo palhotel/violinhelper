@@ -107,6 +107,9 @@ class _Violin extends State<Violin> with SingleTickerProviderStateMixin {
     detector = new Pitchdetector(sampleRate: 44100, sampleSize: 4096);
     detector.onRecorderStateChanged.listen((event) {
       print("event " + event.toString());
+      if(event.toString() == "-1.0"){
+        return;
+      }
       setState(() {
         pitch = event["pitch"];
         getMusicNote();
@@ -166,143 +169,171 @@ class _Violin extends State<Violin> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    return Material(
+      color: Colors.white,
+      child: SafeArea(
+        child: SizedBox.expand(
+          child: buildRealWidget(context),
+        ),
+      ),
+    );
+  }
+
+  void TapDown(TapDownDetails details){
+    var x = details.localPosition.dx;
+    var y = details.localPosition.dy;
+    if (x >= 245 && x <= 275) {
+      //G String
+      double min = 36;
+      debugPrint(min.toString());
+      MusicNote matched = null;
+      for(MusicNote note in this.musicNotes){
+        if(note.strings == 'G' && (note.y - y).abs() < min){
+          min = (note.y - y).abs();
+          matched = note;
+        }
+      }
+      if(matched != null){
+        pitch = map[matched.text];
+        getMusicNote();
+        playAndStop(matched.midi, 1);
+      } else {
+        pitch = map['G3'];
+        getMusicNote();
+        playAndStop(gstring, 1);
+      }
+      setState(() {
+        gplay = true;
+        dplay = false;
+        aplay = false;
+        eplay = false;
+      });
+      new Future.delayed(new Duration(seconds: 1), () {
+        setState(() {
+          gplay = false;
+        });
+      });
+    } else if (x >= 290 && x <= 320) {
+      //D String
+      double min = 36;
+      MusicNote matched = null;
+      for(MusicNote note in this.musicNotes){
+        if(note.strings == 'D' && (note.y - y).abs() < min){
+          min = (note.y - y).abs();
+          matched = note;
+        }
+      }
+      if(matched != null){
+        pitch = map[matched.text];
+        getMusicNote();
+        playAndStop(matched.midi, 1);
+      } else {
+        pitch = map['D4'];
+        getMusicNote();
+        playAndStop(dstring, 1);
+      }
+      setState(() {
+        gplay = false;
+        dplay = true;
+        aplay = false;
+        eplay = false;
+      });
+      new Future.delayed(new Duration(seconds: 1), () {
+        setState(() {
+          dplay = false;
+        });
+      });
+    } else if (x >= 330 && x <= 360) {
+      //A String
+      double min = 36;
+      MusicNote matched = null;
+      for(MusicNote note in this.musicNotes){
+        if(note.strings == 'A' && (note.y - y).abs() < min){
+          min = (note.y - y).abs();
+          matched = note;
+        }
+      }
+      if(matched != null){
+        pitch = map[matched.text];
+        getMusicNote();
+        playAndStop(matched.midi, 1);
+      } else {
+        pitch = map['A4'];
+        getMusicNote();
+        playAndStop(astring, 1);
+      }
+      setState(() {
+        gplay = false;
+        dplay = false;
+        aplay = true;
+        eplay = false;
+      });
+      new Future.delayed(new Duration(seconds: 1), () {
+        setState(() {
+          aplay = false;
+        });
+      });
+    } else if (x >= 375 && x <= 405) {
+      //E String
+      double min = 36;
+      MusicNote matched = null;
+      for(MusicNote note in this.musicNotes){
+        if(note.strings == 'E' && (note.y - y).abs() < min){
+          min = (note.y - y).abs();
+          matched = note;
+        }
+      }
+      if(matched != null){
+        pitch = map[matched.text];
+        getMusicNote();
+        playAndStop(matched.midi, 1);
+      } else {
+        pitch = map['E5'];
+        getMusicNote();
+        playAndStop(estring, 1);
+      }
+      setState(() {
+        gplay = false;
+        dplay = false;
+        aplay = false;
+        eplay = true;
+      });
+      new Future.delayed(new Duration(seconds: 1), () {
+        setState(() {
+          eplay = false;
+        });
+      });
+    }
+  }
+  
+  Widget buildRealWidget(BuildContext context) {
+    var allSize = MediaQuery.of(context).size;
+    RenderBox renderBox = context.findRenderObject();
+    Size size;
+    if(renderBox == null){
+      size = allSize;
+    } else {
+      size = renderBox.size;
+    }
+    var paddingObj = MediaQuery.of(context).padding;
+    var padding = 1;
+    var verticalPadding = paddingObj.top;
+
     return new Scaffold(
       body: Center(
           child: new GestureDetector(
               onTap: () {},
-              onTapDown: (TapDownDetails details) {
-                var x = details.localPosition.dx;
-                var y = details.localPosition.dy;
-                if (x >= 245 && x <= 275) {
-                  //G String
-                  double min = 36;
-                  debugPrint(min.toString());
-                  MusicNote matched = null;
-                  for(MusicNote note in this.musicNotes){
-                    if(note.strings == 'G' && (note.y - y).abs() < min){
-                      min = (note.y - y).abs();
-                      matched = note;
-                    }
-                  }
-                  if(matched != null){
-                    pitch = map[matched.text];
-                    getMusicNote();
-                    playAndStop(matched.midi, 1);
-                  } else {
-                    pitch = map['G3'];
-                    getMusicNote();
-                    playAndStop(gstring, 1);
-                  }
-                  setState(() {
-                    gplay = true;
-                    dplay = false;
-                    aplay = false;
-                    eplay = false;
-                  });
-                  new Future.delayed(new Duration(seconds: 1), () {
-                    setState(() {
-                      gplay = false;
-                    });
-                  });
-                } else if (x >= 290 && x <= 320) {
-                  //D String
-                  double min = 36;
-                  MusicNote matched = null;
-                  for(MusicNote note in this.musicNotes){
-                    if(note.strings == 'D' && (note.y - y).abs() < min){
-                      min = (note.y - y).abs();
-                      matched = note;
-                    }
-                  }
-                  if(matched != null){
-                    pitch = map[matched.text];
-                    getMusicNote();
-                    playAndStop(matched.midi, 1);
-                  } else {
-                    pitch = map['D4'];
-                    getMusicNote();
-                    playAndStop(dstring, 1);
-                  }
-                  setState(() {
-                    gplay = false;
-                    dplay = true;
-                    aplay = false;
-                    eplay = false;
-                  });
-                  new Future.delayed(new Duration(seconds: 1), () {
-                    setState(() {
-                      dplay = false;
-                    });
-                  });
-                } else if (x >= 330 && x <= 360) {
-                  //A String
-                  double min = 36;
-                  MusicNote matched = null;
-                  for(MusicNote note in this.musicNotes){
-                    if(note.strings == 'A' && (note.y - y).abs() < min){
-                      min = (note.y - y).abs();
-                      matched = note;
-                    }
-                  }
-                  if(matched != null){
-                    pitch = map[matched.text];
-                    getMusicNote();
-                    playAndStop(matched.midi, 1);
-                  } else {
-                    pitch = map['A4'];
-                    getMusicNote();
-                    playAndStop(astring, 1);
-                  }
-                  setState(() {
-                    gplay = false;
-                    dplay = false;
-                    aplay = true;
-                    eplay = false;
-                  });
-                  new Future.delayed(new Duration(seconds: 1), () {
-                    setState(() {
-                      aplay = false;
-                    });
-                  });
-                } else if (x >= 375 && x <= 405) {
-                  //E String
-                  double min = 36;
-                  MusicNote matched = null;
-                  for(MusicNote note in this.musicNotes){
-                    if(note.strings == 'E' && (note.y - y).abs() < min){
-                      min = (note.y - y).abs();
-                      matched = note;
-                    }
-                  }
-                  if(matched != null){
-                    pitch = map[matched.text];
-                    getMusicNote();
-                    playAndStop(matched.midi, 1);
-                  } else {
-                    pitch = map['E5'];
-                    getMusicNote();
-                    playAndStop(estring, 1);
-                  }
-                  setState(() {
-                    gplay = false;
-                    dplay = false;
-                    aplay = false;
-                    eplay = true;
-                  });
-                  new Future.delayed(new Duration(seconds: 1), () {
-                    setState(() {
-                      eplay = false;
-                    });
-                  });
-                }
-              },
+              onTapDown: TapDown,
               child: Container(
                 child: Row(
                   children: [
                     new LeftArea(
                         animation: animation,
                         pitchstr: pitchstr,
-                        pitchdelta: pitchdelta),
+                        pitchdelta: pitchdelta,
+                        maxwidth: size.width / 2 - padding,
+                        maxheight: size.height - verticalPadding
+                    ),
                     new AnimatedViolin(
                         animation: animation,
                         gplay: this.gplay,
@@ -313,53 +344,56 @@ class _Violin extends State<Violin> with SingleTickerProviderStateMixin {
                         pitchdelta: pitchdelta,
                         map: map,
                         reverseMap: reverseMap,
-                        musicNotes: musicNotes),
+                        musicNotes: musicNotes,
+                        maxwidth: size.width / 2 - padding,
+                      maxheight: size.height - verticalPadding,
+                    ),
                   ],
                 ),
                 decoration:
                     new BoxDecoration(color: Color.fromRGBO(196, 96, 64, 1)),
               ))),
-      persistentFooterButtons: <Widget>[
-        Text.rich(
-          TextSpan(text: 'Violin Pitch Helper',
-              recognizer: TapGestureRecognizer()..onTap=(){
-                showDialog(
-                    context: context,
-                    builder: (ctx) {
-                      return SimpleDialog(
-                        title: Text("About", textAlign: TextAlign.center,),
-                        titlePadding: EdgeInsets.all(10),
-                        elevation: 5,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(6))),
-                        children: <Widget>[
-                          ListTile(
-                            title: Center(child: Text("Violin Pitch Helper (v1.0)"),),
-                          ),
-                          ListTile(
-                            title: Center(child: Text("Hide / Show all decorations"),),
-                            onTap: (){
-                              setState(() {
-                                drawDecorations = !drawDecorations;
-                              });
-                            },
-                          ),
-                          ListTile(
-                            title: Center(child: Text("you@likeada.com"),),
-                          ),
-                          ListTile(
-                            title: Center(child: Text("Close"),),
-                            onTap: (){
-                              Navigator.pop(context);
-                            },
-                          ),
-                        ],
-                      );
-                    });
-              },
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18))
-        )
-      ],
+      // persistentFooterButtons: <Widget>[
+      //   Text.rich(
+      //     TextSpan(text: 'Violin Pitch Helper',
+      //         recognizer: TapGestureRecognizer()..onTap=(){
+      //           showDialog(
+      //               context: context,
+      //               builder: (ctx) {
+      //                 return SimpleDialog(
+      //                   title: Text("About", textAlign: TextAlign.center,),
+      //                   titlePadding: EdgeInsets.all(10),
+      //                   elevation: 5,
+      //                   shape: RoundedRectangleBorder(
+      //                       borderRadius: BorderRadius.all(Radius.circular(6))),
+      //                   children: <Widget>[
+      //                     ListTile(
+      //                       title: Center(child: Text("Violin Pitch Helper (v1.0)"),),
+      //                     ),
+      //                     ListTile(
+      //                       title: Center(child: Text("Hide / Show all decorations"),),
+      //                       onTap: (){
+      //                         setState(() {
+      //                           drawDecorations = !drawDecorations;
+      //                         });
+      //                       },
+      //                     ),
+      //                     ListTile(
+      //                       title: Center(child: Text("you@likeada.com"),),
+      //                     ),
+      //                     ListTile(
+      //                       title: Center(child: Text("Close"),),
+      //                       onTap: (){
+      //                         Navigator.pop(context);
+      //                       },
+      //                     ),
+      //                   ],
+      //                 );
+      //               });
+      //         },
+      //         style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18))
+      //   )
+      // ],
     );
   }
 }
@@ -376,8 +410,12 @@ class AnimatedViolin extends AnimatedWidget {
       this.pitchdelta,
       this.map,
       this.reverseMap,
-      this.musicNotes})
+      this.musicNotes,
+      this.maxwidth,
+      this.maxheight})
       : super(key: key, listenable: animation);
+  double maxwidth;
+  double maxheight;
   bool gplay;
   bool dplay;
   bool aplay;
@@ -390,18 +428,17 @@ class AnimatedViolin extends AnimatedWidget {
 
   Widget build(BuildContext context) {
     final Animation<double> animation = listenable;
-    var size = MediaQuery.of(context).size;
-    var realLeft = size.width * 0.6;
-    var realWidth = size.width - realLeft - 8;
-    var containerHeight = size.height - 40;
+    var containerHeight = maxheight;
+    debugPrint('bbb ' + maxheight.toString());
     return new Center(
       child: new Container(
-          width: realWidth,
+          width: maxwidth,
           height: containerHeight,
           child: ClipRect(
             child: CustomPaint(
-                painter: FingerBoard.withSize(realWidth, containerHeight, 0, 18,
-                    gplay, dplay, aplay, eplay, animation, pitchstr, pitchdelta, map, reverseMap, musicNotes, drawDecorations)),
+                painter: FingerBoard.withSize(maxwidth, containerHeight, 0, 0,
+                    gplay, dplay, aplay, eplay, animation, pitchstr, pitchdelta,
+                    map, reverseMap, musicNotes, drawDecorations)),
           )),
     );
   }

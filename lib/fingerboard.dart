@@ -58,16 +58,20 @@ class FingerBoard extends CustomPainter {
     if(this.musicNotes.length > 0){
       return;
     }
-    double xStart = clientLeft + toLeft;
+    var boarderLeft = clientWidth * 0.2;
+    var boardWidth = clientWidth - boarderLeft;
+    var boardHeight = clientHeight * 0.8;
+    var bridgeTop = clientHeight * 0.9;
+
+    double xStart = boarderLeft + toLeft;
     double yStart = clientTop + 14;
-    double delta = (clientWidth - toLeft * 2) / 3;
+    double delta = (boardWidth - toLeft * 2) / 3;
     MusicNote g = MusicNote(xStart, yStart, 55, 'G3', 'G');
     MusicNote d = MusicNote(xStart + delta, yStart, 62, 'D4', 'D');
     MusicNote a = MusicNote(xStart + delta * 2, yStart, 69, 'A4', 'A');
     MusicNote e = MusicNote(xStart + delta * 3, yStart, 76, 'E5', 'E');
 
     musicNotes.addAll([g, d, a, e]);
-    var boardHeight = clientHeight * 0.8;
     var maxHeight = boardHeight * 0.9;
     var every = maxHeight / 18;
     var keys = map.keys;
@@ -162,42 +166,43 @@ class FingerBoard extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    var boarderLeft = clientWidth * 0.2;
+    var boardWidth = clientWidth - boarderLeft;
     var boardHeight = clientHeight * 0.8;
-    var bridgeTop = clientHeight - 32;
+    var bridgeTop = clientHeight * 0.9;
+
     canvas.drawRect(
-        Rect.fromLTWH(clientLeft, clientTop, clientWidth, boardHeight),
+        Rect.fromLTWH(boarderLeft, clientTop, boardWidth, boardHeight),
         _boardPaint);
     //draw tapes for 1, 3, 4, 5, 7 Position
     if(drawDecorations){
       var maxHeight = boardHeight * 0.9;
       var every = maxHeight / 18;
       canvas.drawRect(
-          Rect.fromLTWH(clientLeft, clientTop + every * 2 + 10, clientWidth, 10),
+          Rect.fromLTWH(boarderLeft, clientTop + every * 2 + 10, boardWidth, 10),
           _tapePaint);
       canvas.drawRect(
-          Rect.fromLTWH(clientLeft, clientTop + every * 5 + 10, clientWidth, 10),
+          Rect.fromLTWH(boarderLeft, clientTop + every * 5 + 10, boardWidth, 10),
           _tapePaint);
       canvas.drawRect(
-          Rect.fromLTWH(clientLeft, clientTop + every * 7 + 10, clientWidth, 10),
+          Rect.fromLTWH(boarderLeft, clientTop + every * 7 + 10, boardWidth, 10),
           _tapePaint);
       canvas.drawRect(
-          Rect.fromLTWH(clientLeft, clientTop + every * 8 + 10, clientWidth, 10),
+          Rect.fromLTWH(boarderLeft, clientTop + every * 9 + 10, boardWidth, 10),
           _tapePaint);
       canvas.drawRect(
-          Rect.fromLTWH(clientLeft, clientTop + every * 12 + 10, clientWidth, 10),
+          Rect.fromLTWH(boarderLeft, clientTop + every * 12 + 10, boardWidth, 10),
           _tapePaint);
       canvas.drawRect(
-          Rect.fromLTWH(clientLeft, clientTop + every * 15 + 10, clientWidth, 10),
+          Rect.fromLTWH(boarderLeft, clientTop + every * 15 + 10, boardWidth, 10),
           _tapePaint);
     }
 
-    double xStart = clientLeft + toLeft;
+    double xStart = boarderLeft + toLeft;
     double yStart = clientTop + 32;
-    double delta = (clientWidth - toLeft * 2) / 3;
+    double delta = (boardWidth - toLeft * 2) / 3;
     double stringsLen = clientHeight;
     //Draw pillow
-    canvas.drawLine(Offset(clientLeft, clientTop + 32),
-        Offset(clientWidth, clientTop + 32), _carvePaint);
     canvas.drawLine(
         Offset(xStart, clientTop),
         Offset(xStart, yStart),
@@ -223,8 +228,11 @@ class FingerBoard extends CustomPainter {
           ..strokeWidth = 1
           ..color = Color.fromARGB(128, 220, 220, 220));
 
+    canvas.drawLine(Offset(boarderLeft, clientTop + 32),
+        Offset(clientWidth, clientTop + 32), _carvePaint);
+
     //Draw Bridge
-    canvas.drawLine(Offset(clientLeft, bridgeTop),
+    canvas.drawLine(Offset(boarderLeft, bridgeTop),
         Offset(clientWidth, bridgeTop), _bridgePaint);
 
     _stringsPaint..color = Color.fromARGB(255, 220, 220, 220);

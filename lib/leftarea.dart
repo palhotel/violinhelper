@@ -4,11 +4,13 @@ import 'musicnote.dart';
 import 'fhole.dart';
 
 class LeftArea extends AnimatedWidget {
-  LeftArea({Key key, Animation<double> animation, this.pitchstr, this.pitchdelta})
+  LeftArea({Key key, Animation<double> animation, this.pitchstr, this.pitchdelta, this.maxwidth, this.maxheight})
       : super(key: key, listenable: animation);
 
   String pitchstr;
   double pitchdelta;
+  double maxwidth;
+  double maxheight;
 
   List<Widget> pictures(){
     if(this.pitchstr.contains("/")){
@@ -23,11 +25,11 @@ class LeftArea extends AnimatedWidget {
 
   @override
   Widget build(BuildContext context) {
-    var size = MediaQuery.of(context).size;
-    var realWidth = size.width * 0.6;
-    var containerHeight = size.height - 40;
+    var realWidth = maxwidth;
+    var containerHeight = maxheight;
     var firstBlockHeight = 200.0;
     var secondBlockHeight = 150.0;
+    var fHeight = containerHeight - firstBlockHeight - secondBlockHeight - 1;
     return Center(
         child: Container(
             width: realWidth,
@@ -53,11 +55,11 @@ class LeftArea extends AnimatedWidget {
                 ),
                 Container(
                     width: realWidth,
-                    height: containerHeight - firstBlockHeight - secondBlockHeight - 1,
+                    height: fHeight,
                     child: ClipRect(
                       child: CustomPaint(
                           painter: FHole.withSize(realWidth,
-                              containerHeight - firstBlockHeight - secondBlockHeight - 1)),
+                              fHeight)),
                     ))
               ],
             )));
