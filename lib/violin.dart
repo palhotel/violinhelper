@@ -316,8 +316,9 @@ class _Violin extends State<Violin> with SingleTickerProviderStateMixin {
       size = renderBox.size;
     }
     var paddingObj = MediaQuery.of(context).padding;
+
     var padding = 1;
-    var verticalPadding = paddingObj.top;
+    var verticalPadding = paddingObj.top + paddingObj.bottom;
 
     return new Scaffold(
       body: Center(
@@ -429,7 +430,6 @@ class AnimatedViolin extends AnimatedWidget {
   Widget build(BuildContext context) {
     final Animation<double> animation = listenable;
     var containerHeight = maxheight;
-    debugPrint('bbb ' + maxheight.toString());
     return new Center(
       child: new Container(
           width: maxwidth,
