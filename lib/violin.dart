@@ -80,6 +80,7 @@ class _Violin extends State<Violin> with SingleTickerProviderStateMixin {
   bool eplay = false;
 
   List<MusicNote> musicNotes = List<MusicNote>();
+  final _flutterMidi = FlutterMidi();
 
   @override
   void initState() {
@@ -97,9 +98,9 @@ class _Violin extends State<Violin> with SingleTickerProviderStateMixin {
     ]);
     animation = sequence.animate(curve);
 
-    FlutterMidi.unmute();
+    _flutterMidi.unmute();
     rootBundle.load("resource/violin.sf2").then((sf2) {
-      FlutterMidi.prepare(sf2: sf2, name: "violin.sf2");
+      _flutterMidi.prepare(sf2: sf2, name: "violin.sf2");
     });
     map.forEach((key, value) {
       reverseMap[value] = key;
@@ -155,11 +156,11 @@ class _Violin extends State<Violin> with SingleTickerProviderStateMixin {
   }
 
   void playAndStop(int midi, int seconds) {
-    FlutterMidi.playMidiNote(midi: midi);
+    _flutterMidi.playMidiNote(midi: midi);
     controller.reset();
     controller.forward();
     new Future.delayed(new Duration(seconds: seconds), () {
-      FlutterMidi.stopMidiNote(midi: midi);
+      _flutterMidi.stopMidiNote(midi: midi);
     });
   }
 
