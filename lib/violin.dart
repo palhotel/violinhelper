@@ -62,7 +62,7 @@ class Violin extends StatefulWidget {
 class _Violin extends State<Violin> with SingleTickerProviderStateMixin {
   Animation<double> animation;
   AnimationController controller;
-  Pitchdetector detector;
+  Pitchdetector detector = new Pitchdetector(sampleRate: 44100, sampleSize: 4096);
   bool isRecording = false;
   double pitch = 440.0;
   double pitchdelta = 0;
@@ -109,7 +109,7 @@ class _Violin extends State<Violin> with SingleTickerProviderStateMixin {
     map.forEach((key, value) {
       reverseMap[value] = key;
     });
-    detector = new Pitchdetector(sampleRate: 44100, sampleSize: 4096);
+
     detector.onRecorderStateChanged.listen((event) {
       print("event " + event.toString());
       if(event.toString() == "-1.0"){
@@ -120,8 +120,9 @@ class _Violin extends State<Violin> with SingleTickerProviderStateMixin {
         getMusicNote();
       });
     });
-    startRecording();
+
     super.initState();
+    startRecording();
   }
 
   dispose() {
