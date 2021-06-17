@@ -82,6 +82,10 @@ class _Violin extends State<Violin> with SingleTickerProviderStateMixin {
   List<MusicNote> musicNotes = List<MusicNote>();
   final _flutterMidi = FlutterMidi();
 
+  void startRecording()  async{
+    await detector.startRecording();
+  }
+
   @override
   void initState() {
     controller = new AnimationController(
@@ -116,7 +120,7 @@ class _Violin extends State<Violin> with SingleTickerProviderStateMixin {
         getMusicNote();
       });
     });
-    detector.startRecording();
+    startRecording();
     super.initState();
   }
 
