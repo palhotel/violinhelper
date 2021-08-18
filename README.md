@@ -18,3 +18,8 @@ Violin Pitch Helper
                 print("error in setCategory");
     }
 ```
+
+##screenshot
+
+![小程序](screenshot/1.jpg)
+
