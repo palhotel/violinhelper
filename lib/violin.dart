@@ -103,8 +103,8 @@ class _Violin extends State<Violin> with SingleTickerProviderStateMixin {
     animation = sequence.animate(curve);
 
     _flutterMidi.unmute();
-    rootBundle.load("resource/violin.sf2").then((sf2) {
-      _flutterMidi.prepare(sf2: sf2, name: "violin.sf2");
+    rootBundle.load("resource/zzz.sf2").then((sf2) {
+      _flutterMidi.prepare(sf2: sf2, name: "zzz.sf2");
     });
     map.forEach((key, value) {
       reverseMap[value] = key;
@@ -279,7 +279,7 @@ class _Violin extends State<Violin> with SingleTickerProviderStateMixin {
           aplay = false;
         });
       });
-    } else if (x >= 375 && x <= 405) {
+    } else if (x >= 375 && x <= 410) {
       //E String
       double min = 36;
       MusicNote matched = null;
