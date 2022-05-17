@@ -79,6 +79,11 @@ class _Violin extends State<Violin> with SingleTickerProviderStateMixin {
   bool aplay = false;
   bool eplay = false;
 
+  double screenWidth = 0;
+  double screenHeight = 0;
+  double verticalPadding = 0;
+  double padding = 1;
+
   List<MusicNote> musicNotes = List<MusicNote>();
   final _flutterMidi = FlutterMidi();
 
@@ -188,10 +193,19 @@ class _Violin extends State<Violin> with SingleTickerProviderStateMixin {
   void TapDown(TapDownDetails details){
     var x = details.localPosition.dx;
     var y = details.localPosition.dy;
-    if (x >= 245 && x <= 275) {
+
+    var clientWidth = screenWidth / 2 - padding;
+    const toLeft = 16;
+    const radius = 36.0;
+    var boarderLeft = clientWidth * 0.2;
+    var boardWidth = clientWidth - boarderLeft;
+
+    double xStart = boarderLeft + toLeft + screenWidth / 2; // start point of the G string
+    double delta = (boardWidth - toLeft * 2) / 3; //distance between two strings
+
+    if (x >= xStart - radius && x <= xStart + radius) {
       //G String
       double min = 36;
-      debugPrint(min.toString());
       MusicNote matched = null;
       for(MusicNote note in this.musicNotes){
         if(note.strings == 'G' && (note.y - y).abs() < min){
@@ -219,7 +233,7 @@ class _Violin extends State<Violin> with SingleTickerProviderStateMixin {
           gplay = false;
         });
       });
-    } else if (x >= 290 && x <= 320) {
+    } else if (x >= xStart + delta - radius && x <= xStart + delta + radius) {
       //D String
       double min = 36;
       MusicNote matched = null;
@@ -249,7 +263,7 @@ class _Violin extends State<Violin> with SingleTickerProviderStateMixin {
           dplay = false;
         });
       });
-    } else if (x >= 330 && x <= 360) {
+    } else if (x >= xStart + delta * 2 - radius && x <= xStart + delta * 2 + radius) {
       //A String
       double min = 36;
       MusicNote matched = null;
@@ -279,7 +293,7 @@ class _Violin extends State<Violin> with SingleTickerProviderStateMixin {
           aplay = false;
         });
       });
-    } else if (x >= 375 && x <= 410) {
+    } else if (x >= xStart + delta * 3 - radius && x <= xStart + delta * 3 + radius) {
       //E String
       double min = 36;
       MusicNote matched = null;
@@ -321,10 +335,11 @@ class _Violin extends State<Violin> with SingleTickerProviderStateMixin {
     } else {
       size = renderBox.size;
     }
-    var paddingObj = MediaQuery.of(context).padding;
+    this.screenWidth = size.width;
+    this.screenHeight = size.height;
 
-    var padding = 1;
-    var verticalPadding = paddingObj.top + paddingObj.bottom;
+    var paddingObj = MediaQuery.of(context).padding;
+    this.verticalPadding = paddingObj.top + paddingObj.bottom;
 
     return new Scaffold(
       body: Center(
