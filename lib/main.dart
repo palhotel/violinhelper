@@ -1,15 +1,10 @@
-import 'dart:io';
-import 'dart:math';
-
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_midi/flutter_midi.dart';
-import 'violin.dart';
+
+import 'app_entry_mobile.dart' if (dart.library.html) 'app_entry_web.dart' as app_entry;
 
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -18,8 +13,8 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.green,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: Violin(),
-      debugShowCheckedModeBanner: false
+      home: app_entry.buildHome(),
+      debugShowCheckedModeBanner: false,
     );
   }
 }
